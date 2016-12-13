@@ -1,40 +1,41 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django import forms
 from django.forms.utils import ErrorList
 from django.shortcuts import render, get_object_or_404
-from django.views.generic import DetailView, ListView, CreateView
+from django.urls import reverse_lazy
+from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 
 from .forms import TweetModelForm
 from .models import Tweet
-from .mixins import FormUserNeededMixin
+from .mixins import FormUserNeededMixin, UserOwnerMixin
 
 # Create your views here.
 
 # Create Class base view
-# Si el suario va poder ver el contenido pero no publicar sin antes logearse se utiliza FormUserNeededMixin 
+# Si el suario va poder ver el contenido pero no publicar sin antes logearse se utiliza FormUserNeededMixin
 # Si el suario no va poder ver el contenido sin antes logearse LoginRequiredMixin
-class TweetCreateView(LoginRequiredMixin, FormUserNeededMixin, CreateView):
+class TweetCreateView(FormUserNeededMixin, CreateView):
     form_class = TweetModelForm
     template_name = 'tweets/create_view.html'
-    success_url = '/tweet/create'
-    login_url = '/admin/'
+    # success_url = '/tweet/create'
 
-    # Se comentda debido a que se crea un archivo mixin para verificar que el usuario este logeado
+    # Se comenta debido a que se crea un archivo mixin para verificar que el usuario este logeado
     # def form_valid(self, form):
     #     # This method is called when valid form data has been POSTed.
     #     # It should return an HttpResponse.
-    #     # Se valida si el usuario esta autenticado, esta es la primer forma de validar 
+    #     # Se valida si el usuario esta autenticado, esta es la primer forma de validar
     #     if self.request.user.is_authenticated():
     #         form.instance.user = self.request.user
     #         return super(TweetCreateView, self).form_valid(form)
     #     else:
     #         # Se muestra error en el tamplate
-    #         form._errors[forms.forms.NON_FIELD_ERRORS] = ErrorList(["El usuario debe estar logeado para continuar"]) 
+    #         form._errors[forms.forms.NON_FIELD_ERRORS] = ErrorList(["El usuario debe estar logeado para continuar"])
     #         return self.form_invalid(form) # form_invalid(form) es un metodo de las vistas basadas en clases
 
-        
 
-# Create Function base view 
+
+# Create Function base view
 def create_view_tweet(request):
     form = TweetModelForm(request.POST or None) # render the form
 
@@ -48,8 +49,26 @@ def create_view_tweet(request):
     context = {
         "form": form
     }
-
     return render(request, "tweets/create_view.html", context)
+
+
+# Update
+class TweetUpdateView(LoginRequiredMixin, UserOwnerMixin, UpdateView):
+    queryset = Tweet.objects.all()
+    form_class = TweetModelForm
+    template_name = 'tweets/update_view.html'
+    # success_url = '/tweet/'
+    # Si no se define success_url busca get_absolute_url definido en el model si no error
+    login_url = '/admin/'
+
+
+# Delete View
+class TweetDeleteView(LoginRequiredMixin, DeleteView):
+    model = Tweet
+    template_name = "tweets/delete_confirm.html"
+    # reverse_lazy permite una url mas dinamica, utiliza namespace(nombre de app):nombre de url
+    success_url = reverse_lazy("tweet:list")
+
 
 
 # Detail Class base View
@@ -67,13 +86,24 @@ class TweetDetailView(DetailView):
 # List Class base View
 class TweetListView(ListView):
     template_name = "tweets/list_view.html"
-    queryset = Tweet.objects.all()
+    # queryset = Tweet.objects.all() Se comenta porque ahora tambien se incluira una busqueda
+
+    # funcion para poder ejecutar una busqueda
+    def get_queryset(self, *args, **kwargs):
+        qs = Tweet.objects.all()
+        query = self.request.GET.get("q", None)
+        if query is not None:
+            qs = qs.filter(
+                Q(content__icontains=query) |
+                Q(user__username__icontains=query)
+            )
+        print(query)
+        return qs
 
     def get_context_data(self, *args, **kwargs):
         context = super(TweetListView, self).get_context_data(*args, **kwargs)
         # context["another_list"] = Tweet.objects.all()
         # print(context)
-
         return context
 
 
@@ -84,7 +114,6 @@ def tweet_detail_view(request, pk=None):
     context = {
         "object": obj
     }
-
     return render(request, "tweets/detail_view.html", context)
 
 
