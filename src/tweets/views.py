@@ -17,7 +17,7 @@ from .mixins import FormUserNeededMixin, UserOwnerMixin
 # Si el suario no va poder ver el contenido sin antes logearse LoginRequiredMixin
 class TweetCreateView(FormUserNeededMixin, CreateView):
     form_class = TweetModelForm
-    template_name = 'tweets/create_views.html'
+    template_name = 'tweets/create_view.html'
     # success_url = '/tweet/create'
 
     # Se comenta debido a que se crea un archivo mixin para verificar que el usuario este logeado
