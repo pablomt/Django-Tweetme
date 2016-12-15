@@ -1,0 +1,11 @@
+<div class="row">
+  <div class="col-sm-12 text-center">
+    <form class="form-inline" action="{% url "tweet:list" %}" method="get">
+      <div class="form-group">
+          <!-- <label for="q">Buscar</label> -->
+        <input class="form-control" type='text', name='q' placeholder='Texto a Buscar' value='{{ request.GET.q }}'>
+        </div>
+        <input class="btn btn-default" type="submit" name="" value="Buscar">
+    </form>
+  </div>
+</div>

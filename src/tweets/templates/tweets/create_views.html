@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %} Crear Tweet | {{ block.super }} {% endblock title %}
+
+{% block content %}
+
+    {# Se creo el archvio form y en este template se incluye ese html #}
+    {% include "tweets/form.html" with form=form btn_title='Tweet'%}
+
+{% endblock content%}
