@@ -4,6 +4,11 @@ from .models import Tweet
 
 # Este form sobreescribe a los validators dentro del model en el admin
 class TweetModelForm(forms.ModelForm):
+	content = forms.CharField(label='',
+				widget=forms.Textarea(
+				attrs= {'placeholder':"Tu mensaje",
+						'class':"form-control"}
+				))
 	class Meta:
 		model = Tweet
 		fields = ("content",)

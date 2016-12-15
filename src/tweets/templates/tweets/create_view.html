@@ -3,8 +3,11 @@
 {% block title %} Crear Tweet | {{ block.super }} {% endblock title %}
 
 {% block content %}
-
+<div class="">
+  <div class="col-sm-8 col-sm-offset-2">
+    <h1>Crear Tweet</h1>
     {# Se creo el archvio form y en este template se incluye ese html #}
     {% include "tweets/form.html" with form=form btn_title='Tweet'%}
-
-{% endblock content%}
+  </div>
+</div>
+    {% endblock content%}
